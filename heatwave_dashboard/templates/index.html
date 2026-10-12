@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#102c2a">
+  <title>Heatwave Intelligence | KJS-CES-01</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172b2a;
+      --muted: #657572;
+      --line: #dce6e1;
+      --paper: #f4f7f3;
+      --card: #fff;
+      --green: #286c5b;
+      --amber: #d98727;
+      --red: #c7493c;
+      --deep-red: #8f2927;
+      --shadow: 0 12px 30px rgba(31, 59, 49, .07);
+      --shadow-hover: 0 17px 38px rgba(31, 59, 49, .12);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: linear-gradient(180deg, #edf4ef 0, var(--paper) 250px); font: 18px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    button, select { font: inherit; }
+    .topbar { color: #f3faf5; background: radial-gradient(ellipse at 12% -60%, #398069, transparent 55%), linear-gradient(115deg, #102c2a, #173b35 70%, #204a3d); border-bottom: 4px solid #df9d45; box-shadow: 0 8px 24px rgba(16, 44, 42, .12); }
+    .topbar-inner, main { width: min(1240px, calc(100% - 48px)); margin: auto; }
+    .topbar-inner { min-height: 82px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .brand { display: flex; align-items: center; gap: 13px; }
+    .brand-mark { width: 46px; height: 46px; border: 1px solid rgba(255,255,255,.35); border-radius: 15px; display: grid; place-items: center; color: #102c2a; background: linear-gradient(145deg, #ffd47d, #efa83d); box-shadow: 0 5px 14px rgba(0,0,0,.18); font-size: 25px; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { margin-bottom: 2px; font-size: 24px; letter-spacing: .01em; }
+    .subtitle { color: #c1d2ca; font-size: 16px; }
+    .top-actions { display: flex; align-items: center; gap: 10px; }
+    .top-actions select, .button { padding: 9px 12px; border: 1px solid #54716a; border-radius: 9px; color: #f3faf5; background: #193b36; }
+    .button { cursor: pointer; }
+    .button:hover { background: #245148; }
+    .live-status { display: inline-flex; align-items: center; gap: 8px; padding: 8px 11px; border: 1px solid rgba(193,210,202,.2); border-radius: 999px; color: #d5e6dc; background: rgba(255,255,255,.06); font-size: 14px; white-space: nowrap; }
+    .live-indicator { width: 8px; height: 8px; border-radius: 50%; background: #70ca8d; box-shadow: 0 0 0 3px rgba(112, 202, 141, .16); }
+    .live-status[data-state="stale"] .live-indicator { background: #efbd57; box-shadow: 0 0 0 3px rgba(239, 189, 87, .16); }
+    .live-status[data-state="error"] .live-indicator { background: #ff8b7d; box-shadow: 0 0 0 3px rgba(255, 139, 125, .16); }
+    main { padding: 34px 0 52px; }
+    .page-heading { display: flex; justify-content: space-between; align-items: end; gap: 14px; margin-bottom: 22px; }
+    .page-heading h2 { margin-bottom: 4px; color: #173b32; font-size: 32px; letter-spacing: -.025em; }
+    .muted { color: var(--muted); }
+    .updated { font-size: 16px; text-align: right; }
+    .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+    .card, .panel { background: rgba(255,255,255,.96); border: 1px solid rgba(209,223,215,.9); border-radius: 17px; box-shadow: var(--shadow); }
+    .metric { position: relative; overflow: hidden; padding: 20px 21px; background: linear-gradient(145deg, #fff, #fbfdfb); transition: transform .18s ease, box-shadow .18s ease; }
+    .metric::before { position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--metric-accent, #3d8a70); content: ""; }
+    .metric:nth-child(2) { --metric-accent: #d99a37; }
+    .metric:nth-child(3) { --metric-accent: #cf6546; }
+    .metric:nth-child(4) { --metric-accent: #718b9a; }
+    .metric:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+    .metric-label { color: var(--muted); font-size: 16px; }
+    .metric-value { margin-top: 5px; color: #183d32; font-size: 35px; font-weight: 750; letter-spacing: -.04em; line-height: 1.15; font-variant-numeric: tabular-nums; }
+    .metric-note { color: var(--muted); font-size: 15px; }
+    .content-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(310px, .75fr); gap: 18px; align-items: stretch; }
+    .panel { padding: 22px; min-width: 0; }
+    .panel-heading { display: flex; align-items: start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+    .panel-heading h3 { margin: 0; color: #193c33; font-size: 22px; letter-spacing: -.01em; }
+    .panel-heading p { margin: 3px 0 0; color: var(--muted); font-size: 15px; }
+    .legend { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 14px; }
+    .legend span { white-space: nowrap; }
+    .dot { display: inline-block; width: 9px; height: 9px; margin-right: 4px; border-radius: 50%; background: var(--green); }
+    .dot.s2 { background: #e2a235; } .dot.s3 { background: #e47931; } .dot.s4 { background: var(--red); } .dot.s5 { background: var(--deep-red); }
+    .map-wrap { overflow: hidden; border-radius: 12px; background: #eff5f0; }
+    #station-map { display: block; width: 100%; height: auto; min-height: 250px; }
+    .map-grid { stroke: #d7e3dc; stroke-width: 1; stroke-dasharray: 3 5; }
+    .land { fill: #dcebe1; stroke: #9bb7a5; stroke-width: 2; stroke-linejoin: round; }
+    .axis-label { fill: #63756e; font: 13px system-ui, sans-serif; }
+    .station { stroke: #fff; stroke-width: 2; cursor: default; }
+    .empty-map { fill: #657572; font: 14px system-ui, sans-serif; }
+    .below-map { margin: 9px 0 0; color: var(--muted); font-size: 14px; }
+    .advisory-list { display: grid; gap: 11px; max-height: 390px; overflow: auto; padding: 2px 4px 2px 1px; }
+    .advisory-list > .muted { margin: 0; padding: 24px 18px; border: 1px dashed #cbd9d0; border-radius: 12px; background: #f8fbf8; text-align: center; }
+    .advisory { padding: 15px 16px; border: 1px solid var(--line); border-left: 4px solid var(--amber); border-radius: 12px; background: linear-gradient(110deg, #fff, #fcfdfb); box-shadow: 0 3px 10px rgba(31, 59, 49, .035); }
+    .advisory[data-severity="4"], .advisory[data-severity="5"] { border-left-color: var(--red); }
+    .advisory[data-category="data_gap"] { border-left-color: #708a9a; }
+    .advisory-title { margin: 0 0 4px; font-size: 18px; }
+    .advisory-location, .advisory-message { margin: 0; color: var(--muted); font-size: 16px; }
+    .advisory ul { margin: 8px 0 0; padding-left: 18px; font-size: 16px; }
+    .below-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; margin-top: 18px; }
+    .table-wrap { overflow-x: auto; }
+    .below-grid .table-wrap { max-height: 520px; overflow: auto; border: 1px solid #e8efea; border-radius: 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: 16px; text-align: left; }
+    th { position: sticky; top: 0; z-index: 1; padding: 11px 9px; color: #526660; border-bottom: 1px solid var(--line); background: #f5f8f5; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+    td { padding: 12px 9px; border-bottom: 1px solid #edf1ee; white-space: nowrap; }
+    tbody tr { transition: background .15s ease; }
+    tbody tr:hover { background: #f5f9f5; }
+    .table-empty { padding: 25px 12px; color: #527363; background: #f8fbf8; text-align: center; font-weight: 600; }
+    tr:last-child td { border-bottom: 0; }
+    .badge { display: inline-block; min-width: 26px; padding: 2px 7px; border-radius: 20px; background: #e7f0e9; text-align: center; font-size: 14px; font-weight: 700; }
+    .badge.s2 { color: #77500a; background: #fff1d5; } .badge.s3 { color: #8b3b13; background: #ffeadc; }
+    .badge.s4, .badge.s5 { color: #922d29; background: #fde5e1; }
+    .badge.s5 { color: #fff; background: var(--deep-red); }
+    .notice { margin-top: 20px; padding: 14px 17px; border: 1px solid #ead9b5; border-left: 4px solid #d9a24b; border-radius: 12px; color: #69572f; background: linear-gradient(105deg, #fff9e9, #fffdf5); font-size: 15px; }
+    .live-guide { margin-top: 14px; padding: 15px 18px; border: 1px solid #c9ddce; border-left: 4px solid #6fa17b; border-radius: 12px; color: #34554a; background: linear-gradient(105deg, #f0f7f1, #f7faf5); font-size: 15px; }
+    .live-guide code { padding: 2px 5px; border-radius: 4px; background: #e2ece5; font-size: 13px; overflow-wrap: anywhere; }
+    .live-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(340px, .85fr); gap: 18px; margin: 0 0 20px; }
+    .live-panel { position: relative; overflow: hidden; background: linear-gradient(155deg, #fff 35%, #fbfdfb); }
+    .live-panel::before { position: absolute; top: 0; left: 20px; right: 20px; height: 3px; border-radius: 0 0 4px 4px; background: linear-gradient(90deg, #3f9275, #edb34b); content: ""; }
+    .live-temp { color: #246b56; font-size: clamp(40px, 5vw, 60px); font-weight: 750; letter-spacing: -.06em; line-height: 1; font-variant-numeric: tabular-nums; }
+    .live-temp-caption { margin: 5px 0 0; color: var(--muted); font-size: 15px; }
+    .trend-chart { display: block; width: 100%; height: auto; margin-top: 13px; overflow: visible; }
+    .trend-grid { stroke: #e5ece7; stroke-width: 1; }
+    .trend-area { fill: url(#trend-fill); }
+    .trend-line { fill: none; stroke: #318168; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+    .trend-point { fill: #fff; stroke: #28735d; stroke-width: 2; }
+    .trend-label { fill: #718079; font: 13px system-ui, sans-serif; }
+    .reading-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+    .reading-card { min-width: 0; padding: 13px 14px; border: 1px solid #e0e9e3; border-radius: 12px; background: linear-gradient(145deg, #fff, #f7faf7); transition: transform .18s ease, border-color .18s ease; }
+    .reading-card:hover { transform: translateY(-2px); border-color: #b7d1c1; }
+    .reading-station { overflow: hidden; color: #63736c; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+    .reading-value { margin-top: 3px; color: #18392f; font-size: 28px; font-weight: 700; letter-spacing: -.04em; }
+    .reading-meta { color: var(--muted); font-size: 14px; }
+    .live-empty { grid-column: 1 / -1; padding: 24px 10px; color: var(--muted); text-align: center; font-size: 15px; }
+    .live-stamp { color: var(--muted); font-size: 14px; }
+    .error { padding: 15px; border: 1px solid #ecc2bd; border-radius: 10px; color: #812c26; background: #fff1ef; }
+    .loading { color: var(--muted); padding: 24px 8px; text-align: center; }
+    .footer { margin-top: 24px; padding: 16px 0 4px; color: var(--muted); border-top: 1px solid #dce6e1; text-align: center; font-size: 14px; }
+    :focus-visible { outline: 3px solid #e8ad4c; outline-offset: 3px; }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+    @media (max-width: 1050px) {
+      .topbar-inner { padding: 13px 0; flex-wrap: wrap; }
+      .brand { flex: 1 1 55%; }
+      .top-actions { width: 100%; justify-content: flex-end; }
+      .live-grid { grid-template-columns: minmax(0, 1fr) minmax(300px, .9fr); }
+    }
+    @media (max-width: 820px) {
+      .cards { grid-template-columns: repeat(2, 1fr); }
+      .content-grid, .below-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 540px) {
+      .topbar-inner, main { width: min(100% - 28px, 1240px); }
+      .topbar-inner { padding: 14px 0; align-items: flex-start; flex-direction: column; }
+      .top-actions { width: 100%; flex-wrap: wrap; justify-content: flex-start; } .top-actions select, .top-actions button { flex: 1; }
+      .page-heading { align-items: flex-start; flex-direction: column; } .updated { text-align: left; }
+      .cards { gap: 9px; } .metric { padding: 13px; } .metric-value { font-size: 28px; }
+      .panel { padding: 15px; } .legend { gap: 6px; } .live-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">☀</div>
+        <div>
+          <h1>Heatwave Intelligence</h1>
+          <div class="subtitle">Climate monitoring &amp; early-warning dashboard · KJS-CES-01</div>
+        </div>
+      </div>
+      <div class="top-actions">
+        <label for="days" class="subtitle">Forecast horizon</label>
+        <select id="days" aria-label="Forecast horizon">
+          <option value="1">1 day</option><option value="2">2 days</option><option value="3">3 days</option>
+          <option value="4">4 days</option><option value="5">5 days</option><option value="6">6 days</option>
+          <option value="7">7 days</option>
+        </select>
+        <span class="live-status" id="live-status" data-state="connected" role="status"><i class="live-indicator"></i><span id="live-label">Connecting…</span></span>
+        <button class="button" id="refresh" type="button">Refresh data</button>
+      </div>
+    </div>
+  </header>
+  <main>
+    <section class="page-heading">
+      <div><h2>Regional heat outlook</h2><p class="muted">Observations, indexed forecasts and location-based advisories</p></div>
+      <div class="updated" id="updated" aria-live="polite">Loading system data…</div>
+    </section>
+    <div class="live-guide"><strong>Live feed:</strong> this project currently displays simulated AWS readings, not a live external IMD/weather-station feed. With the simulator running, the dashboard refreshes automatically every 5 seconds. Start it with <code>python main.py simulate-aws --live --tick-seconds 2.0</code> and keep both processes running. Without an active simulator, the dashboard shows the latest readings already stored in SQLite.</div>
+    <section class="cards" aria-label="System overview">
+      <article class="card metric"><div class="metric-label">Monitored locations</div><div class="metric-value" id="locations-count">—</div><div class="metric-note">IMD grid points and AWS stations</div></article>
+      <article class="card metric"><div class="metric-label">Active alerts</div><div class="metric-value" id="alerts-count">—</div><div class="metric-note">Priority-ranked heat alerts</div></article>
+      <article class="card metric"><div class="metric-label">Highest forecast</div><div class="metric-value" id="hottest-value">—</div><div class="metric-note" id="hottest-place">Forecast unavailable</div></article>
+      <article class="card metric"><div class="metric-label">Stored observations</div><div class="metric-value" id="observations-count">—</div><div class="metric-note" id="coverage">Database coverage</div></article>
+    </section>
+    <div id="error" hidden></div>
+    <section class="live-grid" aria-label="Live AWS station data">
+      <article class="panel live-panel">
+        <div class="panel-heading">
+          <div><h3>Live temperature trend</h3><p id="trend-caption">Recent readings from the latest reporting AWS station</p></div>
+          <span class="live-stamp" id="trend-updated">Waiting for station data</span>
+        </div>
+        <div class="live-temp" id="live-temperature">--.-°</div>
+        <p class="live-temp-caption" id="live-temperature-caption">No AWS readings received yet</p>
+        <svg id="temperature-chart" class="trend-chart" viewBox="0 0 700 220" role="img" aria-label="Recent AWS station temperature trend">
+          <defs><linearGradient id="trend-fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#56a786" stop-opacity=".28"/><stop offset="100%" stop-color="#56a786" stop-opacity=".01"/></linearGradient></defs>
+          <g id="trend-grid"></g><path id="trend-area" class="trend-area"></path><path id="trend-line" class="trend-line"></path><g id="trend-points"></g>
+        </svg>
+      </article>
+      <article class="panel live-panel">
+        <div class="panel-heading">
+          <div><h3>Latest station readings</h3><p>Most recently ingested AWS sensor values</p></div>
+          <span class="live-stamp" id="reading-count">— stations</span>
+        </div>
+        <div class="reading-list" id="live-readings"><div class="live-empty">Waiting for AWS observations…</div></div>
+      </article>
+    </section>
+    <section class="content-grid">
+      <article class="panel">
+        <div class="panel-heading">
+          <div><h3>Station temperature map</h3><p>Forecast severity at each indexed location</p></div>
+          <div class="legend" aria-label="Severity legend">
+            <span><i class="dot"></i>1</span><span><i class="dot s2"></i>2</span><span><i class="dot s3"></i>3</span><span><i class="dot s4"></i>4</span><span><i class="dot s5"></i>5</span>
+          </div>
+        </div>
+        <div class="map-wrap">
+          <svg id="station-map" viewBox="0 0 600 430" role="img" aria-label="Schematic map showing heat forecast severity by station">
+            <g id="map-grid"></g><path id="india-outline" class="land"></path><g id="map-points"></g>
+          </svg>
+        </div>
+        <p class="below-map">Schematic coordinate view only; not an administrative boundary or official warning map.</p>
+      </article>
+      <article class="panel">
+        <div class="panel-heading"><div><h3>Rule-based advisories</h3><p>Ranked by forecast or active alert severity</p></div></div>
+        <div class="advisory-list" id="advisories"><div class="loading">Loading advisories…</div></div>
+      </article>
+    </section>
+    <section class="below-grid">
+      <article class="panel">
+        <div class="panel-heading"><div><h3>Regional forecast</h3><p>Location forecasts using the selected horizon</p></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Location</th><th>Region</th><th>Forecast</th><th>Severity</th><th>Status</th></tr></thead><tbody id="forecast-rows"><tr><td colspan="5" class="loading">Loading forecasts…</td></tr></tbody></table></div>
+      </article>
+      <article class="panel">
+        <div class="panel-heading"><div><h3>Priority alert queue</h3><p>Highest-severity alerts first</p></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Location</th><th>Date</th><th>Temp.</th><th>Anomaly</th><th>Severity</th></tr></thead><tbody id="alert-rows"><tr><td colspan="5" class="loading">Loading alerts…</td></tr></tbody></table></div>
+      </article>
+    </section>
+    <div class="notice">Forecasts and severity thresholds are prototype outputs and should be verified against current IMD guidance. Advisories support planning only; they are not official warnings or medical advice. An insufficient-data status must not be interpreted as low risk.</div>
+    <footer class="footer">Heatwave Intelligence System · Data and forecasts are sourced from the local project API.</footer>
+  </main>
+  <script>
+    "use strict";
+    const $ = (id) => document.getElementById(id);
+    const svgNS = "http://www.w3.org/2000/svg";
+    const bounds = { minLat: 6.5, maxLat: 37.6, minLng: 68, maxLng: 97.5 };
+    const plot = { left: 45, top: 28, width: 520, height: 350 };
+    let dashboardRequestId = 0;
+    let activeDashboardRequest = null;
+
+    function node(tag, text, className) {
+      const element = document.createElement(tag);
+      if (text !== undefined) element.textContent = text;
+      if (className) element.className = className;
+      return element;
+    }
+    function cell(row, text) { row.appendChild(node("td", text)); }
+    function severityBadge(severity) {
+      return node("span", severity == null ? "—" : String(severity), `badge${severity ? ` s${severity}` : ""}`);
+    }
+    function drawMap(locations, forecasts) {
+      const grid = $("map-grid");
+      const points = $("map-points");
+      grid.replaceChildren();
+      points.replaceChildren();
+      const project = (lat, lng) => [
+        plot.left + (lng - bounds.minLng) / (bounds.maxLng - bounds.minLng) * plot.width,
+        plot.top + (bounds.maxLat - lat) / (bounds.maxLat - bounds.minLat) * plot.height
+      ];
+      for (let lng = 70; lng <= 95; lng += 5) {
+        const [x] = project(bounds.minLat, lng);
+        const line = document.createElementNS(svgNS, "line");
+        line.setAttribute("x1", x); line.setAttribute("x2", x);
+        line.setAttribute("y1", plot.top); line.setAttribute("y2", plot.top + plot.height);
+        line.setAttribute("class", "map-grid"); grid.appendChild(line);
+        const label = document.createElementNS(svgNS, "text");
+        label.setAttribute("x", x); label.setAttribute("y", 400); label.setAttribute("text-anchor", "middle");
+        label.setAttribute("class", "axis-label"); label.textContent = `${lng}°E`; grid.appendChild(label);
+      }
+      for (let lat = 10; lat <= 35; lat += 5) {
+        const [, y] = project(lat, bounds.minLng);
+        const line = document.createElementNS(svgNS, "line");
+        line.setAttribute("x1", plot.left); line.setAttribute("x2", plot.left + plot.width);
+        line.setAttribute("y1", y); line.setAttribute("y2", y);
+        line.setAttribute("class", "map-grid"); grid.appendChild(line);
+        const label = document.createElementNS(svgNS, "text");
+        label.setAttribute("x", 36); label.setAttribute("y", y + 4); label.setAttribute("text-anchor", "end");
+        label.setAttribute("class", "axis-label"); label.textContent = `${lat}°N`; grid.appendChild(label);
+      }
+      const outline = [[68,23],[71,24],[74,29],[77,34],[81,36],[85,32],[89,28],[94,27],[97,23],[94,18],[89,13],[83,8],[78,7],[75,11],[73,16],[70,19]]
+        .map(([lng, lat]) => project(lat, lng).join(",")).join(" ");
+      $("india-outline").setAttribute("d", `M${outline} Z`);
+      const forecastById = new Map(forecasts.map((item) => [item.location_id, item]));
+      for (const location of locations) {
+        if (location.latitude < bounds.minLat || location.latitude > bounds.maxLat ||
+            location.longitude < bounds.minLng || location.longitude > bounds.maxLng) continue;
+        const item = forecastById.get(location.id);
+        const severity = item && item.forecast ? item.forecast.severity : 0;
+        const [cx, cy] = project(location.latitude, location.longitude);
+        const circle = document.createElementNS(svgNS, "circle");
+        circle.setAttribute("cx", cx); circle.setAttribute("cy", cy); circle.setAttribute("r", severity >= 4 ? 8 : 6);
+        circle.setAttribute("class", `station${severity ? ` s${severity}` : ""}`);
+        circle.setAttribute("fill", severity >= 4 ? "#c7493c" : severity === 3 ? "#e47931" : severity === 2 ? "#e2a235" : "#286c5b");
+        const title = document.createElementNS(svgNS, "title");
+        title.textContent = `${location.name}: ${item && item.forecast ? `${item.forecast.predicted_c}°C, severity ${severity}` : "insufficient data"}`;
+        circle.appendChild(title); points.appendChild(circle);
+      }
+      if (!locations.length) {
+        const label = document.createElementNS(svgNS, "text");
+        label.setAttribute("x", 300); label.setAttribute("y", 220); label.setAttribute("text-anchor", "middle");
+        label.setAttribute("class", "empty-map"); label.textContent = "No observations available yet";
+        points.appendChild(label);
+      }
+    }
+    function renderAdvisories(advisories) {
+      const container = $("advisories");
+      container.replaceChildren();
+      if (!advisories.length) {
+        container.appendChild(node("p", "No station data is available. Ingest observations to produce forecasts and advisories.", "muted"));
+        return;
+      }
+      for (const item of advisories.slice(0, 12)) {
+        const article = node("article", undefined, "advisory");
+        article.dataset.severity = item.severity == null ? "" : String(item.severity);
+        article.dataset.category = item.category;
+        const heading = node("h4", item.title, "advisory-title");
+        const location = node("p", `${item.name} · ${item.region} · ${item.target_date || "date unavailable"}`, "advisory-location");
+        const message = node("p", item.message, "advisory-message");
+        article.append(heading, location, message);
+        const list = document.createElement("ul");
+        for (const action of item.actions) list.appendChild(node("li", action));
+        article.appendChild(list); container.appendChild(article);
+      }
+    }
+    function renderForecasts(forecasts) {
+      const body = $("forecast-rows");
+      body.replaceChildren();
+      if (!forecasts.length) {
+        const row = document.createElement("tr"); const td = node("td", "No forecasts available", "table-empty");
+        td.colSpan = 5; row.appendChild(td); body.appendChild(row); return;
+      }
+      const sorted = [...forecasts].sort((a, b) =>
+        (b.forecast?.severity || 0) - (a.forecast?.severity || 0) ||
+        (b.forecast?.predicted_c || 0) - (a.forecast?.predicted_c || 0));
+      for (const item of sorted.slice(0, 30)) {
+        const row = document.createElement("tr");
+        cell(row, item.name); cell(row, item.region || "—");
+        cell(row, item.forecast ? `${item.forecast.predicted_c.toFixed(1)}°C` : "—");
+        const severity = document.createElement("td"); severity.appendChild(severityBadge(item.forecast?.severity)); row.appendChild(severity);
+        cell(row, item.status === "ok" ? item.target_date : "Insufficient data");
+        body.appendChild(row);
+      }
+    }
+    function renderAlerts(alerts) {
+      const body = $("alert-rows");
+      body.replaceChildren();
+      if (!alerts.length) {
+        const row = document.createElement("tr"); const td = node("td", "No active alerts", "table-empty");
+        td.colSpan = 5; row.appendChild(td); body.appendChild(row); return;
+      }
+      for (const item of alerts.slice(0, 12)) {
+        const row = document.createElement("tr");
+        cell(row, item.name); cell(row, item.date || "—");
+        cell(row, `${Number(item.temperature_c).toFixed(1)}°C`);
+        cell(row, `${Number(item.anomaly_c).toFixed(1)}°C`);
+        const severity = document.createElement("td"); severity.appendChild(severityBadge(item.severity)); row.appendChild(severity);
+        body.appendChild(row);
+      }
+    }
+    function renderLiveReadings(readings, history, station) {
+      const container = $("live-readings");
+      container.replaceChildren();
+      $("reading-count").textContent = `${readings.length} station${readings.length === 1 ? "" : "s"}`;
+      if (!readings.length) {
+        container.appendChild(node("div", "No AWS observations in the database yet. Start the live simulator to see readings here.", "live-empty"));
+        $("live-temperature").textContent = "--.-°";
+        $("live-temperature-caption").textContent = "No AWS readings received yet";
+        $("trend-caption").textContent = "Recent readings from the latest reporting AWS station";
+        $("trend-updated").textContent = "Waiting for station data";
+        drawTemperatureTrend([]);
+        return;
+      }
+      const latest = readings[0];
+      $("live-temperature").textContent = `${Number(latest.temperature_c).toFixed(1)}°`;
+      $("live-temperature-caption").textContent = `${latest.station_id} · ${latest.region || "Region unavailable"} · ${latest.observed_at.replace("T", " ")}`;
+      $("trend-caption").textContent = `${station} · previous ${history.length} readings`;
+      $("trend-updated").textContent = `Database write ${latest.ingested_at.replace("T", " ")}`;
+      for (const reading of readings) {
+        const card = node("article", undefined, "reading-card");
+        card.append(
+          node("div", reading.station_id || "AWS station", "reading-station"),
+          node("div", `${Number(reading.temperature_c).toFixed(1)}°C`, "reading-value"),
+          node("div", `${reading.region || "Unknown region"} · ${reading.humidity == null ? "humidity n/a" : `${Number(reading.humidity).toFixed(0)}% RH`}`, "reading-meta"),
+          node("div", reading.observed_at.replace("T", " "), "reading-meta")
+        );
+        container.appendChild(card);
+      }
+      drawTemperatureTrend(history);
+    }
+    function drawTemperatureTrend(history) {
+      const grid = $("trend-grid");
+      const points = $("trend-points");
+      grid.replaceChildren();
+      points.replaceChildren();
+      const line = $("trend-line");
+      const area = $("trend-area");
+      const left = 48, top = 18, width = 625, height = 150;
+      if (!history.length) {
+        line.setAttribute("d", "");
+        area.setAttribute("d", "");
+        return;
+      }
+      const values = history.map(item => Number(item.temperature_c));
+      const low = Math.floor(Math.min(...values) - 1);
+      const high = Math.ceil(Math.max(...values) + 1);
+      const span = Math.max(2, high - low);
+      const y = value => top + (high - value) / span * height;
+      for (let index = 0; index <= 3; index++) {
+        const value = high - span * index / 3;
+        const position = top + height * index / 3;
+        const rule = document.createElementNS(svgNS, "line");
+        rule.setAttribute("x1", left); rule.setAttribute("x2", left + width);
+        rule.setAttribute("y1", position); rule.setAttribute("y2", position);
+        rule.setAttribute("class", "trend-grid"); grid.appendChild(rule);
+        const label = document.createElementNS(svgNS, "text");
+        label.setAttribute("x", left - 8); label.setAttribute("y", position + 4);
+        label.setAttribute("text-anchor", "end"); label.setAttribute("class", "trend-label");
+        label.textContent = `${value.toFixed(0)}°`; grid.appendChild(label);
+      }
+      const coords = values.map((value, index) => ({
+        x: left + (values.length === 1 ? width / 2 : index * width / (values.length - 1)),
+        y: y(value),
+        value,
+        reading: history[index]
+      }));
+      const path = coords.map((point, index) => `${index ? "L" : "M"}${point.x},${point.y}`).join(" ");
+      line.setAttribute("d", path);
+      area.setAttribute("d", `${path} L${coords[coords.length - 1].x},${top + height} L${coords[0].x},${top + height} Z`);
+      for (const point of coords) {
+        const circle = document.createElementNS(svgNS, "circle");
+        circle.setAttribute("cx", point.x); circle.setAttribute("cy", point.y);
+        circle.setAttribute("r", coords.length > 12 ? 2.5 : 4);
+        circle.setAttribute("class", "trend-point");
+        const title = document.createElementNS(svgNS, "title");
+        title.textContent = `${point.reading.observed_at.replace("T", " ")} · ${point.value.toFixed(1)}°C`;
+        circle.appendChild(title); points.appendChild(circle);
+      }
+      for (const [index, labelText] of [[0, history[0].observed_at], [history.length - 1, history[history.length - 1].observed_at]]) {
+        const label = document.createElementNS(svgNS, "text");
+        label.setAttribute("x", coords[index].x); label.setAttribute("y", 196);
+        label.setAttribute("text-anchor", index === 0 ? "start" : "end"); label.setAttribute("class", "trend-label");
+        label.textContent = labelText.replace("T", " ").slice(5, 16);
+        grid.appendChild(label);
+      }
+    }
+    function showError(message) {
+      const box = $("error"); box.hidden = false; box.className = "error";
+      box.textContent = `Unable to load dashboard data: ${message}`;
+      $("updated").textContent = "Data refresh failed";
+      $("live-status").dataset.state = "error";
+      $("live-label").textContent = "Connection issue";
+    }
+    async function loadDashboard() {
+      const requestId = ++dashboardRequestId;
+      if (activeDashboardRequest) activeDashboardRequest.abort();
+      const controller = new AbortController();
+      activeDashboardRequest = controller;
+      const button = $("refresh"); button.disabled = true; button.textContent = "Loading…";
+      $("error").hidden = true;
+      try {
+        const response = await fetch(`/api/dashboard?days=${encodeURIComponent($("days").value)}`, {
+          headers: { Accept: "application/json" },
+          signal: controller.signal
+        });
+        const data = await response.json();
+        if (requestId !== dashboardRequestId) return;
+        if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+        $("error").textContent = "";
+        $("live-status").dataset.state = data.live_feed.active ? "connected" : "stale";
+        $("live-label").textContent = data.live_feed.active
+          ? `SIMULATED AWS · ${data.live_feed.age_seconds}s ago`
+          : "API connected · no fresh simulated data";
+        $("locations-count").textContent = data.locations.length.toLocaleString();
+        $("alerts-count").textContent = data.pending_alerts.toLocaleString();
+        $("observations-count").textContent = Number(data.quality.total_observations).toLocaleString();
+        const span = data.quality.coverage;
+        $("coverage").textContent = span.first ? `${span.first.slice(0, 10)} – ${span.last.slice(0, 10)}` : "No coverage yet";
+        const hottest = data.forecasts.filter((item) => item.forecast).sort((a, b) => b.forecast.predicted_c - a.forecast.predicted_c)[0];
+        $("hottest-value").textContent = hottest ? `${hottest.forecast.predicted_c.toFixed(1)}°C` : "—";
+        $("hottest-place").textContent = hottest ? `${hottest.name} · severity ${hottest.forecast.severity}` : "No forecast available";
+        $("updated").textContent = `Latest observation: ${data.as_of || "none"} · refreshed ${new Date().toLocaleTimeString()}`;
+        drawMap(data.locations, data.forecasts);
+        renderAdvisories(data.advisories);
+        renderForecasts(data.forecasts);
+        renderAlerts(data.alerts);
+        renderLiveReadings(data.live_readings, data.temperature_history, data.history_station);
+      } catch (error) {
+        if (error.name === "AbortError" || requestId !== dashboardRequestId) return;
+        const message = error instanceof TypeError
+          ? "Cannot reach the dashboard server. From the project folder, run `run_dashboard.bat` or `python -m heatwave_dashboard.server --port 5051`, then reload this page."
+          : error.message || "unexpected response";
+        showError(message);
+      } finally {
+        if (requestId === dashboardRequestId) {
+          activeDashboardRequest = null;
+          button.disabled = false; button.textContent = "Refresh data";
+        }
+      }
+    }
+    $("refresh").addEventListener("click", loadDashboard);
+    $("days").addEventListener("change", loadDashboard);
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) loadDashboard();
+    });
+    window.setInterval(() => {
+      if (!document.hidden && !activeDashboardRequest) loadDashboard();
+    }, 5000);
+    loadDashboard();
+  </script>
+</body>
+</html>
