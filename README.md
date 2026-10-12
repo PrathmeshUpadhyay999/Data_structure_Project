@@ -1,7 +1,25 @@
 # Heatwave Data Pipeline (KJS-CES-01)
-## Person 2: Data Pipeline & Database Layer
+## Project Team Contributions
 
-A clean, beginner-friendly Python data pipeline for ingesting, validating, cleaning, and storing meteorological observations in SQLite. The pipeline and core API use the Python standard library (no pandas or numpy); the optional Flask dashboard dependency is listed in `requirements.txt`.
+This project combines data structures, a meteorological data pipeline, and a Flask dashboard for heatwave monitoring and early warning.
+
+### Person 1: Data Structures & Forecasting
+
+- Implements spatial indexing and temporal B-tree structures for regional and time-series queries.
+- Provides priority-ranked alerts, forecast generation, and the API used by the dashboard.
+
+### Person 2: Data Pipeline & Database
+
+- Loads, validates, cleans, and stores IMD records and AWS-source observations in SQLite.
+- Provides the ingestion workflow, simulated live AWS stream, and database indexes used by the API.
+
+### Person 3: Frontend & Advisory System
+
+- Builds the Flask dashboard that brings together regional forecasts, the station map, active alerts, and AWS station readings.
+- Adds explainable, rule-based advisories based on forecast severity, alert data, and data availability.
+- Integrates the dashboard with Person 1's API and Person 2's SQLite data pipeline; the browser refreshes dashboard data automatically.
+
+The pipeline and core API use the Python standard library (no pandas or numpy); Flask, used by the dashboard, is listed in `requirements.txt`. The live AWS stream is simulated by this project and is not a connection to an external real-time weather provider.
 
 ---
 
